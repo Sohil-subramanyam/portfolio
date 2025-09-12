@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sohil Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0c12;
+            color: #f5f5f5;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid #1a1a2a;
+        }
+        .section-header {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background-color: #6366f1; /* Indigo accent */
+            border-radius: 9999px;
+        }
+        .card {
+            background-color: #1a1a2a;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+        .project-card .title {
+            font-weight: 700;
+            color: #a5b4fc;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .project-card .description {
+            color: #d1d5db;
+            margin-bottom: 1.5rem;
+        }
+        .tag {
+            background-color: #2a2a3a;
+            color: #c7d2fe;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .highlight-tag {
+            background-color: #6366f1;
+            color: #ffffff;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+        .btn-primary {
+            background-color: #6366f1;
+            color: #ffffff;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5;
+            transform: translateY(-2px);
+        }
+        #visualization {
+            width: 100%;
+            height: 900px; /* Increased height for more detail */
+            position: relative;
+            background-color: #0c0c12;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .node-label {
+            pointer-events: none;
+            text-anchor: middle;
+            font-size: 1.25rem;
+            font-weight: bold;
+            fill: #e5e7eb;
+        }
+        .node-group:hover .node-label {
+            fill: #ffffff;
+        }
+        /* Project Detail Pop-up Styles */
+        #details-popup {
+            display: none;
+            position: absolute;
+            padding: 1.5rem;
+            background-color: #1f2937;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            border: 2px solid #6366f1;
+            max-width: 350px;
+            transform: translate(-50%, -110%);
+        }
+        #details-popup h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #a5b4fc;
+            margin-bottom: 0.5rem;
+        }
+        #details-popup p {
+            font-size: 1rem;
+            color: #d1d5db;
+        }
+        .details-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .details-tags .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+        }
+
+        /* New Loading Screen Styles */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0c0c12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            overflow: hidden;
+        }
+        .loading-text {
+            color: #f5f5f5;
+            font-size: 2rem;
+            font-weight: bold;
+            z-index: 10;
+            animation: text-fade 1.5s ease-in-out infinite alternate;
+            text-align: center; /* Ensures multi-line text is centered */
+        }
+        @keyframes text-fade {
+            from { opacity: 1; }
+            to { opacity: 0.6; }
+        }
+        .icon {
+            position: absolute;
+            color: #6366f1;
+            opacity: 0.7;
+            user-select: none;
+            will-change: transform;
+        }
+        @keyframes fall {
+            from { transform: translateY(-10vh) rotate(0deg); }
+            to { transform: translateY(110vh) rotate(360deg); }
+        }
+        @keyframes rise {
+            from { transform: translateY(10vh) rotate(0deg); }
+            to { transform: translateY(-110vh) rotate(-360deg); }
+        }
+    </style>
+</head>
+<body class="bg-[#0c0c12] text-[#f5f5f5]">
+
+    <!-- New Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-text">"Crafting the future,<br>one line of code at a time."</div>
+    </div>
+
+    <!-- New Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full z-50 py-4 px-8 bg-[#0c0c12] backdrop-blur-sm bg-opacity-80">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-white">Sohil</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#hero" class="hover:text-[#6366f1] transition-colors duration-300">Home</a>
+                <a href="#visualization-section" class="hover:text-[#6366f1] transition-colors duration-300">Skills</a>
+                <a href="#education" class="hover:text-[#6366f1] transition-colors duration-300">Education</a>
+                <a href="#certifications" class="hover:text-[#6366f1] transition-colors duration-300">Certificates</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <header id="hero" class="h-[60vh] flex flex-col justify-center items-center text-center px-4">
+            <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white mb-4 animate-fade-in">CHINTHAGINJALA SOHIL SUBRAMANYAM</h1>
+            <p class="text-xl sm:text-2xl font-light text-[#d1d5db] max-w-3xl mx-auto animate-fade-in-up">
+                Building User-Centric Solutions by Connecting Code, AI, and Design.
+            </p>
+            <div class="mt-12 flex justify-center space-x-6 animate-fade-in-up">
+                <a href="https://drive.google.com/drive/folders/17c3AyESSVTm6I6fOirLzg-bQa7abjFme" target="_blank" class="btn-primary">Resume</a>
+                <a href="https://github.com/Sohil-subramanyam" target="_blank" class="btn-primary bg-transparent text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1] hover:text-[#0c0c12]">GitHub</a>
+                <a href="https://www.linkedin.com/in/sohil-subramanyam" target="_blank" class="btn-primary">LinkedIn</a>
+            </div>
+        </header>
+
+        <!-- Dynamic Visualization Section -->
+        <section id="visualization-section" class="section">
+            <h2 class="section-header">My Network of Skills, Projects & Certifications</h2>
+            <div id="visualization" class="card">
+                <svg width="100%" height="100%"></svg>
+            </div>
+            
+            <!-- In-place Details Pop-up -->
+            <div id="details-popup">
+                <h3 class="title"></h3>
+                <p class="description"></p>
+                <div class="details-tags"></div>
+                <div class="project-links mt-4 space-x-4"></div>
+            </div>
+        </section>
+
+        <!-- Professional Summary Section -->
+        <section id="summary" class="section">
+            <h2 class="section-header">Professional Summary</h2>
+            <div class="card">
+                <p id="summary-text" class="text-lg text-[#d1d5db]">
+                    Motivated Computer Science undergraduate at VIT-AP University with a passion for **artificial intelligence** and **prompt engineering**. My expertise spans across robust programming languages like Python and Java, foundational knowledge in computer networking, and a keen eye for detail in UI/UX design. I'm actively bridging the gap between intelligent systems and compelling user experiences, with a commitment to continuous learning to create impactful, user-centered platforms.
+                </p>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <section id="education" class="section">
+            <h2 class="section-header">Education</h2>
+            <!-- First row with 2 columns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card flex flex-col items-center text-center justify-center">
+                    <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">Turito Junior College</h3>
+                    <p class="text-[#d1d5db]">Intermediate Education</p>
+                    <p class="text-[#888] text-sm">Aug 2021 - Jul 2023</p>
+                </div>
+                <div class="card flex flex-col items-center text-center justify-center">
+                    <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">DAV Schools Network</h3>
+                    <p class="text-[#d1d5db]">10th Grade (Secondary Education)</p>
+                    <p class="text-[#888] text-sm">Mar 2021</p>
+                </div>
+            </div>
+            <!-- Second row for the centered item -->
+            <div class="mt-8 flex justify-center">
+                <div class="w-full md:w-[calc(50%-1rem)]">
+                    <div class="card flex flex-col items-center text-center justify-center">
+                        <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">VIT-AP University</h3>
+                        <p class="text-[#d1d5db]">B.Tech in Computer Science</p>
+                        <p class="text-[#888] text-sm">Sep 2023 - Jul 2027</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Certifications & Awards Section -->
+        <section id="certifications" class="section">
+            <h2 class="section-header">Certifications & Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">Start The Web</h3>
+                    <p class="text-d1d5db]">Certification in web development fundamentals.</p>
+                    <a href="https://credsverse.com/credentials/324d18f7-401c-465d-bee9-a217db1b5bc7" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">Torque Gaming</h3>
+                    <p class="text-d1d5db]">Certificate of Appreciation for active contribution.</p>
+                    <a href="https://credsverse.com/credentials/f927e4d0-df01-46c8-8654-39657ccc2d2e" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">HackerX</h3>
+                    <p class="text-d1d5db]">Participation in a prominent tech recruitment and networking event.</p>
+                    <a href="https://certificate.hack2skill.com/user/gdgscsubmissions/2025H2S01GSC-I10389" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">AI Tools Workshop</h3>
+                    <p class="text-d1d5db]">Certificate for completing a workshop on practical AI tools.</p>
+                    <a href="https://certx.in/certificate/0270772f-3809-4400-b29b-1e1c61cd0997531244" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">Wadhwani Foundation IGNITE 3.4</h3>
+                    <p class="text-d1d5db]">Participation in a program focused on innovation and entrepreneurship.</p>
+                    <a href="https://web.certificate.wfglobal.org/en/certificate?certificateId=67fde997eeacc2785e227a94" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-lg text-[#a5b4fc]">Google Developer Program x Hack to Skills</h3>
+                    <p class="text-d1d5db]">Certificate of participation in the Google Developer Program, demonstrating practical skills.</p>
+                    <a href="https://certificate.hack2skill.com/user/gdgscsubmissions/2025H2S01GSC-I10389" target="_blank" class="btn-primary mt-4 inline-block text-sm">View Certificate</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+
+            // --- New Preloader Logic ---
+            const iconContainer = document.createElement('div');
+            iconContainer.style.position = 'absolute';
+            iconContainer.style.width = '100%';
+            iconContainer.style.height = '100%';
+            iconContainer.style.overflow = 'hidden';
+            loadingScreen.prepend(iconContainer);
+
+            const icons = ['💻', '🧠', '💡', '{ }', '</>', '🚀', '📈', '🎨', '🌐', '⚙️'];
+            for (let i = 0; i < 25; i++) {
+                const icon = document.createElement('div');
+                icon.textContent = icons[Math.floor(Math.random() * icons.length)];
+                icon.className = 'icon';
+                const isFalling = Math.random() > 0.5;
+                const animationDuration = Math.random() * 3 + 3; // 3-6 seconds
+                const animationDelay = Math.random() * 3;
+
+                if (isFalling) {
+                    icon.style.top = '-50px';
+                    icon.style.animation = `fall ${animationDuration}s linear ${animationDelay}s infinite`;
+                } else {
+                    icon.style.bottom = '-50px';
+                    icon.style.animation = `rise ${animationDuration}s linear ${animationDelay}s infinite`;
+                }
+                icon.style.left = `${Math.random() * 100}vw`;
+                icon.style.fontSize = `${Math.random() * 1.5 + 1}rem`;
+                iconContainer.appendChild(icon);
+            }
+
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 5000);
+
+            // D3.js visualization logic
+            const graphData = {
+                nodes: [
+                    { id: "Sohil", group: 0, label: "SOHIL SUBRAMANYAM" },
+                    { id: "Skills", group: 1, label: "SKILLS" },
+                    { id: "Projects", group: 1, label: "PROJECTS" },
+                    { id: "Certifications", group: 1, label: "CERTIFICATIONS" },
+                    { id: "UI/UX", group: 2, label: "UI/UX Design" },
+                    { id: "AI", group: 2, label: "AI & Prompt Engineering" },
+                    { id: "Networking", group: 2, label: "Computer Networking" },
+                    { id: "Web Design", group: 2, label: "Web Design" },
+                    { id: "Smart Cart", group: 3, label: "Smart Cart Prototype" },
+                    { id: "Chatbot", group: 3, label: "Next-Gen AI Chatbot" },
+                    { id: "Figma Prototypes", group: 3, label: "Figma Prototypes" },
+                    { id: "Start The Web", group: 4, label: "Start The Web" },
+                    { id: "Torque Gaming", group: 4, label: "Torque Gaming" },
+                    { id: "HackerX", group: 4, label: "HackerX" },
+                    { id: "AI Tools Workshop", group: 4, label: "AI Tools Workshop" },
+                    { id: "Wadhwani", group: 4, label: "Wadhwani Foundation" },
+                    { id: "Google Developer Program", group: 4, label: "Google Dev Program" },
+                ],
+                links: [
+                    { source: "Sohil", target: "Skills", value: 15 },
+                    { source: "Sohil", target: "Projects", value: 15 },
+                    { source: "Sohil", target: "Certifications", value: 15 },
+                    { source: "Skills", target: "UI/UX", value: 8 },
+                    { source: "Skills", target: "AI", value: 8 },
+                    { source: "Skills", target: "Networking", value: 8 },
+                    { source: "Skills", target: "Web Design", value: 8 },
+                    { source: "Projects", target: "Smart Cart", value: 8 },
+                    { source: "Projects", target: "Chatbot", value: 8 },
+                    { source: "Projects", target: "Figma Prototypes", value: 8 },
+                    { source: "Certifications", target: "Start The Web", value: 8 },
+                    { source: "Certifications", target: "Torque Gaming", value: 8 },
+                    { source: "Certifications", target: "HackerX", value: 8 },
+                    { source: "Certifications", target: "AI Tools Workshop", value: 8 },
+                    { source: "Certifications", target: "Wadhwani", value: 8 },
+                    { source: "Certifications", target: "Google Developer Program", value: 8 },
+                ]
+            };
+            
+            // Comprehensive data object for all node details
+            const nodeDetails = {
+                "UI/UX": {
+                    title: "UI/UX Design",
+                    description: "Skilled in creating intuitive and visually appealing user interfaces and experiences, with a focus on user-centric design principles.",
+                    tags: ["Figma", "Adobe XD", "Prototyping"],
+                    links: []
+                },
+                "AI": {
+                    title: "AI & Prompt Engineering",
+                    description: "Proficient in developing and fine-tuning AI models and crafting effective prompts to achieve desired outcomes in conversational AI and data analysis.",
+                    tags: ["AI", "Prompt Engineering", "Python"],
+                    links: []
+                },
+                "Networking": {
+                    title: "Computer Networking",
+                    description: "Foundational knowledge in computer networking principles, including network architecture, protocols, and security.",
+                    tags: ["Networking", "Protocols", "Security"],
+                    links: []
+                },
+                "Web Design": {
+                    title: "Web Design",
+                    description: "Experienced in front-end web development with skills in HTML, CSS, and JavaScript to build responsive and dynamic web applications.",
+                    tags: ["HTML", "CSS", "JavaScript", "Front-end"],
+                    links: []
+                },
+                "Chatbot": {
+                    title: "Next-Gen AI Chatbot",
+                    description: "Currently in development, this advanced chatbot integrates a comprehensive suite of accessories and a polished UI/UX to create a highly intuitive and user-friendly conversational experience. My work on this project is centered on prompt engineering to fine-tune the AI's responses and UI/UX design to ensure seamless interaction.",
+                    tags: ["AI", "Prompt Engineering", "UI/UX Design"],
+                    links: []
+                },
+                "Smart Cart": {
+                    title: "Smart Cart Prototype",
+                    description: "An innovative concept for a smart shopping cart designed to enhance the in-store experience. This project showcases my ability to create user-centric designs and apply technical knowledge to solve real-world problems.",
+                    tags: ["UI/UX Design", "Figma", "Prototyping"],
+                    links: []
+                },
+                "Figma Prototypes": {
+                    title: "UI/UX Prototypes (Figma)",
+                    description: "A direct demonstration of my skills in creating aesthetically pleasing and functional user interfaces for various projects.",
+                    tags: ["Figma", "UI/UX Design"],
+                    links: [{ name: "View Prototype", url: "https://www.figma.com/proto/OxpycGhZXNQWgwaok6l7G5/gdg?node-id=137-2253&p=f&t=zOwMs9XBwmRCI0ui-1&scaling=scale-down&content-scaling=fixed&page-id=76%3A3&starting-point-node-id=137%3A2253" }]
+                },
+                "Start The Web": {
+                    title: "Start The Web",
+                    description: "A certification demonstrating proficiency in fundamental web development concepts, including HTML, CSS, and JavaScript.",
+                    tags: ["Web Dev", "Certification"],
+                    links: []
+                },
+                "Torque Gaming": {
+                    title: "Torque Gaming",
+                    description: "Certificate of Appreciation for active contribution to the Torque Gaming community, showcasing teamwork and dedication outside of academics.",
+                    tags: ["Appreciation", "Award"],
+                    links: []
+                },
+                "HackerX": {
+                    title: "HackerX",
+                    description: "Participation in a prominent tech recruitment and networking event, expanding my professional network and industry knowledge.",
+                    tags: ["Networking", "Event"],
+                    links: []
+                },
+                "AI Tools Workshop": {
+                    title: "AI Tools Workshop",
+                    description: "A certification for completing a workshop on practical AI tools, enhancing my hands-on experience with modern AI technologies.",
+                    tags: ["AI", "Workshop", "Certification"],
+                    links: []
+                },
+                "Wadhwani": {
+                    title: "Wadhwani Foundation IGNITE 3.4",
+                    description: "Participation in a program focused on innovation and entrepreneurship, developing skills in business and creative problem-solving.",
+                    tags: ["Innovation", "Entrepreneurship"],
+                    links: []
+                },
+                "Google Developer Program": {
+                    title: "Google Developer Program",
+                    description: "Certificate of participation in the Google Developer Program, demonstrating practical skills and engagement with Google's developer community.",
+                    tags: ["Google", "Certification"],
+                    links: []
+                },
+            };
+            
+            const svg = d3.select("#visualization svg");
+            const width = document.getElementById('visualization').clientWidth;
+            const height = document.getElementById('visualization').clientHeight;
+            
+            const simulation = d3.forceSimulation(graphData.nodes)
+                .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-350))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = svg.append("g")
+                .attr("stroke", "#6b7280")
+                .attr("stroke-opacity", 0.6)
+                .selectAll("line")
+                .data(graphData.links)
+                .join("line")
+                .attr("stroke-width", d => Math.sqrt(d.value));
+
+            const node = svg.append("g")
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 1.5)
+                .selectAll("circle")
+                .data(graphData.nodes)
+                .join("circle")
+                .attr("r", d => {
+                    if (d.group === 0) return 25; // Central node
+                    if (d.group === 1) return 20; // Main network nodes
+                    if (d.group === 2) return 12; // Skill nodes
+                    if (d.group === 3) return 12; // Project nodes
+                    if (d.group === 4) return 10; // Certification nodes
+                    return 10;
+                })
+                .attr("fill", d => {
+                    switch(d.group) {
+                        case 0: return "#818cf8"; // Sohil
+                        case 1: return "#6366f1"; // Main Networks
+                        case 2: return "#a5b4fc"; // Skills
+                        case 3: return "#c7d2fe"; // Projects
+                        case 4: return "#cbd5e1"; // Certifications
+                        default: return "#f5f5f5";
+                    }
+                })
+                .attr("cursor", "pointer")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", (event, d) => {
+                    const detail = nodeDetails[d.id];
+                    if (detail) {
+                        showDetailsPopup(detail, event.pageX, event.pageY);
+                    } else {
+                        hideDetailsPopup();
+                    }
+                });
+
+            const labels = svg.append("g")
+                .selectAll("text")
+                .data(graphData.nodes)
+                .join("text")
+                .attr("class", "node-label")
+                .attr("fill", "#e5e7eb")
+                .attr("font-size", d => {
+                    if (d.group === 0) return "1.75rem";
+                    if (d.group === 1) return "1.25rem";
+                    return "0.9rem";
+                })
+                .attr("dy", d => {
+                    if (d.group === 0) return "3.0rem";
+                    if (d.group === 1) return "2.5rem";
+                    return "1.75rem";
+                })
+                .text(d => d.label);
+                
+            function ticked() {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+                
+                labels
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            }
+
+            simulation.on("tick", ticked);
+
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            // Pop-up details logic
+            const detailsPopup = document.getElementById('details-popup');
+            let activeNode = null;
+
+            function showDetailsPopup(data, x, y) {
+                const visualizationSection = document.getElementById('visualization-section');
+                const rect = visualizationSection.getBoundingClientRect();
+                detailsPopup.querySelector('h3').textContent = data.title;
+                detailsPopup.querySelector('p').textContent = data.description;
+                
+                const tagsContainer = detailsPopup.querySelector('.details-tags');
+                tagsContainer.innerHTML = '';
+                if (data.tags) {
+                    data.tags.forEach(tag => {
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'tag';
+                        tagSpan.textContent = tag;
+                        tagsContainer.appendChild(tagSpan);
+                    });
+                }
+                
+                const linksContainer = detailsPopup.querySelector('.project-links');
+                linksContainer.innerHTML = '';
+                if (data.links && data.links.length > 0) {
+                    data.links.forEach(link => {
+                        const linkButton = document.createElement('a');
+                        linkButton.href = link.url;
+                        linkButton.target = "_blank";
+                        linkButton.className = 'btn-primary inline-block';
+                        linkButton.textContent = link.name;
+                        linksContainer.appendChild(linkButton);
+                    });
+                }
+                const offsetX = x - rect.left;
+                const offsetY = y - rect.top;
+                
+                detailsPopup.style.left = `${offsetX}px`;
+                detailsPopup.style.top = `${offsetY}px`;
+                detailsPopup.style.display = 'block';
+            }
+
+            function hideDetailsPopup() {
+                detailsPopup.style.display = 'none';
+            }
+
+            document.addEventListener('click', (event) => {
+                const isClickInsidePopup = detailsPopup.contains(event.target);
+                const isClickOnNode = event.target.tagName === 'circle';
+                
+                if (!isClickInsidePopup && !isClickOnNode) {
+                    hideDetailsPopup();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
