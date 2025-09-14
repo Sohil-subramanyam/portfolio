@@ -15,23 +15,34 @@
             line-height: 1.6;
             overflow-x: hidden;
         }
+        /* Adjusted container for responsive padding */
         .container {
+            width: 100%;
             max-width: 1100px;
             margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
+            padding: 0 1rem; /* Base padding for mobile */
+        }
+        @media (min-width: 640px) {
+            .container {
+                padding: 0 2rem; /* Padding for larger screens */
+            }
         }
         .section {
             padding: 4rem 0;
             border-bottom: 1px solid #1a1a2a;
         }
+        /* Responsive section header */
         .section-header {
-            font-size: 2.5rem;
+            font-size: 2rem; /* Mobile font size */
             font-weight: 800;
             color: #fff;
             margin-bottom: 2rem;
             position: relative;
+        }
+        @media (min-width: 768px) {
+            .section-header {
+                font-size: 2.5rem; /* Desktop font size */
+            }
         }
         .section-header::after {
             content: '';
@@ -46,9 +57,14 @@
         .card {
             background-color: #1a1a2a;
             border-radius: 12px;
-            padding: 2rem;
+            padding: 1.5rem; /* Adjusted padding for mobile */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        @media (min-width: 768px) {
+            .card {
+                padding: 2rem; /* Original padding for desktop */
+            }
         }
         .card:hover {
             transform: translateY(-8px);
@@ -87,6 +103,7 @@
             border-radius: 9999px;
             font-weight: 600;
             transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: center;
         }
         .btn-primary:hover {
             background-color: #4f46e5;
@@ -94,11 +111,16 @@
         }
         #visualization {
             width: 100%;
-            height: 900px; /* Increased height for more detail */
+            height: 65vh; /* Responsive height for mobile */
             position: relative;
             background-color: #0c0c12;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        @media (min-width: 768px) {
+            #visualization {
+                height: 900px; /* Original height for desktop */
+            }
         }
         .node-label {
             pointer-events: none;
@@ -110,7 +132,6 @@
         .node-group:hover .node-label {
             fill: #ffffff;
         }
-        /* Project Detail Pop-up Styles */
         #details-popup {
             display: none;
             position: absolute;
@@ -122,6 +143,17 @@
             border: 2px solid #6366f1;
             max-width: 350px;
             transform: translate(-50%, -110%);
+        }
+        /* Responsive override for the popup on mobile */
+        @media (max-width: 767px) {
+            #details-popup {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                max-width: 90vw;
+                width: 90%;
+            }
         }
         #details-popup h3 {
             font-size: 1.25rem;
@@ -143,8 +175,6 @@
             font-size: 0.75rem;
             padding: 0.25rem 0.75rem;
         }
-
-        /* New Loading Screen Styles */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -162,11 +192,16 @@
         }
         .loading-text {
             color: #f5f5f5;
-            font-size: 2rem;
+            font-size: 1.5rem; /* Adjusted for mobile */
             font-weight: bold;
             z-index: 10;
             animation: text-fade 1.5s ease-in-out infinite alternate;
-            text-align: center; /* Ensures multi-line text is centered */
+            text-align: center;
+        }
+         @media (min-width: 768px) {
+            .loading-text {
+                font-size: 2rem;
+            }
         }
         @keyframes text-fade {
             from { opacity: 1; }
@@ -191,46 +226,64 @@
 </head>
 <body class="bg-[#0c0c12] text-[#f5f5f5]">
 
-    <!-- New Loading Screen -->
     <div id="loading-screen">
         <div class="loading-text">"Crafting the future,<br>one line of code at a time."</div>
     </div>
 
-    <!-- New Navigation Bar -->
-    <nav class="fixed top-0 left-0 w-full z-50 py-4 px-8 bg-[#0c0c12] backdrop-blur-sm bg-opacity-80">
+    <!-- Responsive Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full z-50 py-4 px-4 sm:px-8 bg-[#0c0c12]/80 backdrop-blur-sm">
         <div class="container mx-auto flex justify-between items-center">
             <a href="#" class="text-2xl font-bold text-white">Sohil</a>
+            
+            <!-- Desktop Menu -->
             <div class="hidden md:flex space-x-8">
                 <a href="#hero" class="hover:text-[#6366f1] transition-colors duration-300">Home</a>
                 <a href="#visualization-section" class="hover:text-[#6366f1] transition-colors duration-300">Skills</a>
                 <a href="#education" class="hover:text-[#6366f1] transition-colors duration-300">Education</a>
                 <a href="#certifications" class="hover:text-[#6366f1] transition-colors duration-300">Certificates</a>
             </div>
+            
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="menu-btn" class="text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden mt-4">
+            <a href="#hero" class="block py-2 px-4 text-sm hover:bg-[#1a1a2a]">Home</a>
+            <a href="#visualization-section" class="block py-2 px-4 text-sm hover:bg-[#1a1a2a]">Skills</a>
+            <a href="#education" class="block py-2 px-4 text-sm hover:bg-[#1a1a2a]">Education</a>
+            <a href="#certifications" class="block py-2 px-4 text-sm hover:bg-[#1a1a2a]">Certificates</a>
         </div>
     </nav>
 
-    <main class="container">
+    <main class="container pt-20"> <!-- Added padding-top to avoid content hiding behind nav -->
         <!-- Hero Section -->
-        <header id="hero" class="h-[60vh] flex flex-col justify-center items-center text-center px-4">
-            <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white mb-4 animate-fade-in">CHINTHAGINJALA SOHIL SUBRAMANYAM</h1>
-            <p class="text-xl sm:text-2xl font-light text-[#d1d5db] max-w-3xl mx-auto animate-fade-in-up">
+        <header id="hero" class="min-h-[70vh] flex flex-col justify-center items-center text-center">
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white mb-4">CHINTHAGINJALA SOHIL SUBRAMANYAM</h1>
+            <p class="text-lg sm:text-xl md:text-2xl font-light text-[#d1d5db] max-w-3xl mx-auto">
                 Building User-Centric Solutions by Connecting Code, AI, and Design.
             </p>
-            <div class="mt-12 flex justify-center space-x-6 animate-fade-in-up">
-                <a href="https://drive.google.com/drive/folders/17c3AyESSVTm6I6fOirLzg-bQa7abjFme" target="_blank" class="btn-primary">Resume</a>
-                <a href="https://github.com/Sohil-subramanyam" target="_blank" class="btn-primary bg-transparent text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1] hover:text-[#0c0c12]">GitHub</a>
-                <a href="https://www.linkedin.com/in/sohil-subramanyam" target="_blank" class="btn-primary">LinkedIn</a>
+            <!-- Responsive buttons container -->
+            <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full sm:w-auto">
+                <a href="https://drive.google.com/drive/folders/17c3AyESSVTm6I6fOirLzg-bQa7abjFme" target="_blank" class="btn-primary w-full sm:w-auto">Resume</a>
+                <a href="https://github.com/Sohil-subramanyam" target="_blank" class="btn-primary bg-transparent text-[#6366f1] border border-[#6366f1] hover:bg-[#6366f1] hover:text-white w-full sm:w-auto">GitHub</a>
+                <a href="https://www.linkedin.com/in/sohil-subramanyam" target="_blank" class="btn-primary w-full sm:w-auto">LinkedIn</a>
             </div>
         </header>
 
         <!-- Dynamic Visualization Section -->
         <section id="visualization-section" class="section">
-            <h2 class="section-header">My Network of Skills, Projects & Certifications</h2>
-            <div id="visualization" class="card">
+            <h2 class="section-header">My Network of Skills, Projects & Certifications<br><h6>&lt;(^-^)-> click/drag on the nodes to check the details of the node <-(^-^)/&gt;</h6></h2>
+            <div id="visualization" class="card p-0 overflow-hidden"> <!-- Removed padding and added overflow hidden -->
                 <svg width="100%" height="100%"></svg>
             </div>
             
-            <!-- In-place Details Pop-up -->
             <div id="details-popup">
                 <h3 class="title"></h3>
                 <p class="description"></p>
@@ -244,7 +297,7 @@
             <h2 class="section-header">Professional Summary</h2>
             <div class="card">
                 <p id="summary-text" class="text-lg text-[#d1d5db]">
-                    Motivated Computer Science undergraduate at VIT-AP University with a passion for **artificial intelligence** and **prompt engineering**. My expertise spans across robust programming languages like Python and Java, foundational knowledge in computer networking, and a keen eye for detail in UI/UX design. I'm actively bridging the gap between intelligent systems and compelling user experiences, with a commitment to continuous learning to create impactful, user-centered platforms.
+                    Motivated Computer Science undergraduate at VIT-AP University with a passion for <strong>artificial intelligence</strong> and <strong>prompt engineering</strong>. My expertise spans across robust programming languages like Python and Java, foundational knowledge in computer networking, and a keen eye for detail in UI/UX design. I'm actively bridging the gap between intelligent systems and compelling user experiences, with a commitment to continuous learning to create impactful, user-centered platforms.
                 </p>
             </div>
         </section>
@@ -252,26 +305,25 @@
         <!-- Education Section -->
         <section id="education" class="section">
             <h2 class="section-header">Education</h2>
-            <!-- First row with 2 columns -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="card flex flex-col items-center text-center justify-center">
                     <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">Turito Junior College</h3>
                     <p class="text-[#d1d5db]">Intermediate Education</p>
-                    <p class="text-[#888] text-sm">Aug 2021 - Jul 2023</p>
+                    <p class="text-gray-400 text-sm">Aug 2021 - Jul 2023</p>
                 </div>
                 <div class="card flex flex-col items-center text-center justify-center">
                     <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">DAV Schools Network</h3>
                     <p class="text-[#d1d5db]">10th Grade (Secondary Education)</p>
-                    <p class="text-[#888] text-sm">Mar 2021</p>
+                    <p class="text-gray-400 text-sm">Mar 2021</p>
                 </div>
             </div>
-            <!-- Second row for the centered item -->
             <div class="mt-8 flex justify-center">
-                <div class="w-full md:w-[calc(50%-1rem)]">
+                <!-- On mobile, this will be full width, on desktop it centers correctly -->
+                <div class="w-full md:w-1/2">
                     <div class="card flex flex-col items-center text-center justify-center">
                         <h3 class="font-bold text-2xl mb-2 text-[#a5b4fc]">VIT-AP University</h3>
                         <p class="text-[#d1d5db]">B.Tech in Computer Science</p>
-                        <p class="text-[#888] text-sm">Sep 2023 - Jul 2027</p>
+                        <p class="text-gray-400 text-sm">Sep 2023 - Jul 2027</p>
                     </div>
                 </div>
             </div>
@@ -317,9 +369,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Mobile Menu Toggle ---
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close mobile menu when a link is clicked
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
             const loadingScreen = document.getElementById('loading-screen');
 
-            // --- New Preloader Logic ---
+            // --- Preloader Logic ---
             const iconContainer = document.createElement('div');
             iconContainer.style.position = 'absolute';
             iconContainer.style.width = '100%';
@@ -396,7 +462,6 @@
                 ]
             };
             
-            // Comprehensive data object for all node details
             const nodeDetails = {
                 "UI/UX": {
                     title: "UI/UX Design",
@@ -479,12 +544,13 @@
             };
             
             const svg = d3.select("#visualization svg");
-            const width = document.getElementById('visualization').clientWidth;
-            const height = document.getElementById('visualization').clientHeight;
+            const vizContainer = document.getElementById('visualization');
+            let width = vizContainer.clientWidth;
+            let height = vizContainer.clientHeight;
             
             const simulation = d3.forceSimulation(graphData.nodes)
-                .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(150))
-                .force("charge", d3.forceManyBody().strength(-350))
+                .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(width > 768 ? 150 : 80)) // Shorter distance on mobile
+                .force("charge", d3.forceManyBody().strength(width > 768 ? -350 : -200)) // Less repulsion on mobile
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
             const link = svg.append("g")
@@ -502,20 +568,21 @@
                 .data(graphData.nodes)
                 .join("circle")
                 .attr("r", d => {
-                    if (d.group === 0) return 25; // Central node
-                    if (d.group === 1) return 20; // Main network nodes
-                    if (d.group === 2) return 12; // Skill nodes
-                    if (d.group === 3) return 12; // Project nodes
-                    if (d.group === 4) return 10; // Certification nodes
+                    const isMobile = width < 768;
+                    if (d.group === 0) return isMobile ? 20 : 25;
+                    if (d.group === 1) return isMobile ? 16 : 20;
+                    if (d.group === 2) return isMobile ? 10 : 12;
+                    if (d.group === 3) return isMobile ? 10 : 12;
+                    if (d.group === 4) return isMobile ? 8 : 10;
                     return 10;
                 })
                 .attr("fill", d => {
                     switch(d.group) {
-                        case 0: return "#818cf8"; // Sohil
-                        case 1: return "#6366f1"; // Main Networks
-                        case 2: return "#a5b4fc"; // Skills
-                        case 3: return "#c7d2fe"; // Projects
-                        case 4: return "#cbd5e1"; // Certifications
+                        case 0: return "#818cf8";
+                        case 1: return "#6366f1";
+                        case 2: return "#a5b4fc";
+                        case 3: return "#c7d2fe";
+                        case 4: return "#cbd5e1";
                         default: return "#f5f5f5";
                     }
                 })
@@ -540,14 +607,16 @@
                 .attr("class", "node-label")
                 .attr("fill", "#e5e7eb")
                 .attr("font-size", d => {
-                    if (d.group === 0) return "1.75rem";
-                    if (d.group === 1) return "1.25rem";
-                    return "0.9rem";
+                    const isMobile = width < 768;
+                    if (d.group === 0) return isMobile ? "1rem" : "1.75rem";
+                    if (d.group === 1) return isMobile ? "0.9rem" : "1.25rem";
+                    return isMobile ? "0.7rem" : "0.9rem";
                 })
                 .attr("dy", d => {
-                    if (d.group === 0) return "3.0rem";
-                    if (d.group === 1) return "2.5rem";
-                    return "1.75rem";
+                    const isMobile = width < 768;
+                    if (d.group === 0) return isMobile ? "2.2rem" : "3.0rem";
+                    if (d.group === 1) return isMobile ? "2rem" : "2.5rem";
+                    return isMobile ? "1.5rem" : "1.75rem";
                 })
                 .text(d => d.label);
                 
@@ -586,10 +655,8 @@
                 event.subject.fy = null;
             }
 
-            // Pop-up details logic
             const detailsPopup = document.getElementById('details-popup');
-            let activeNode = null;
-
+            
             function showDetailsPopup(data, x, y) {
                 const visualizationSection = document.getElementById('visualization-section');
                 const rect = visualizationSection.getBoundingClientRect();
@@ -630,7 +697,8 @@
             function hideDetailsPopup() {
                 detailsPopup.style.display = 'none';
             }
-
+            
+            // This event listener handles closing the popup
             document.addEventListener('click', (event) => {
                 const isClickInsidePopup = detailsPopup.contains(event.target);
                 const isClickOnNode = event.target.tagName === 'circle';
@@ -639,9 +707,41 @@
                     hideDetailsPopup();
                 }
             });
+
+            // Re-center simulation on window resize
+            window.addEventListener('resize', () => {
+                width = vizContainer.clientWidth;
+                height = vizContainer.clientHeight;
+                simulation.force("center", d3.forceCenter(width / 2, height / 2));
+                simulation.alpha(0.3).restart(); // Reheat the simulation
+            });
         });
     </script>
+
+<footer class="bg-[#1a1a2a] py-8 text-center text-[#d1d5db]">
+    <div class="container mx-auto px-4">
+        <h3 class="text-xl font-bold mb-4 text-[#a5b4fc]">Get In Touch</h3>
+        <p class="mb-2">
+            Email: 
+            <a href="mailto:sohillucky2007@gmail.com" class="text-[#6366f1] hover:underline">sohillucky2007@gmail.com</a>
+        </p>
+        <div class="flex justify-center space-x-6 mt-4">
+            <a href="https://github.com/Sohil-subramanyam" target="_blank" class="text-2xl text-[#c7d2fe] hover:text-[#6366f1] transition-colors duration-300">
+                GitHub
+            </a>
+            <a href="https://www.linkedin.com/in/sohil-subramanyam" target="_blank" class="text-2xl text-[#c7d2fe] hover:text-[#6366f1] transition-colors duration-300">
+                LinkedIn
+            </a>
+        </div>
+        <p class="mt-8 text-sm text-gray-500">
+            &copy; 2025 Sohil Subramanyam. All Rights Reserved.
+        </p>
+<p class="mb-2">
+
+    Mobile: <a href="tel:+919390471433" class="text-[#6366f1] hover:underline">+91 9390471433</a>
+
+</p>
+    </div>
+</footer>
 </body>
 </html>
-
-
